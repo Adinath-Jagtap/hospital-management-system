@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}Patient History{% endblock %}
+{% block content %}
+<h2 class="mb-4">📋 Patient History - {{ patient._user.name }}</h2>
+<div class="card mb-3 shadow-sm">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">Patient Information</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <p><strong>Date of Birth:</strong> {{ patient.date_of_birth }}</p>
+                <p><strong>Gender:</strong> {{ patient.gender }}</p>
+            </div>
+            <div class="col-md-6">
+                <p><strong>Blood Group:</strong> {{ patient.blood_group or 'N/A' }}</p>
+                <p><strong>Contact:</strong> {{ patient._user.phone }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow">
+    <div class="card-header bg-success text-white">
+        <h5 class="mb-0">Treatment History</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Date</th>
+                        <th>Diagnosis</th>
+                        <th>Prescription</th>
+                        <th>Notes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for apt in appointments %}
+                    {% if apt._treatment %}
+                    <tr>
+                        <td>{{ apt.date }}</td>
+                        <td>{{ apt._treatment.diagnosis }}</td>
+                        <td>{{ apt._treatment.prescription }}</td>
+                        <td>{{ apt._treatment.notes or 'N/A' }}</td>
+                    </tr>
+                    {% endif %}
+                    {% else %}
+                    <tr>
+                        <td colspan="4" class="text-center text-muted">No treatment history available</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<div class="mt-3">
+    <a href="{{ url_for('doctor_dashboard') }}" class="btn btn-secondary">← Back to Dashboard</a>
+</div>
+{% endblock %}

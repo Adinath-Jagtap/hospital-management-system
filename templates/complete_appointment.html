@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Complete Appointment{% endblock %}
+{% block content %}
+<h2 class="mb-4">✅ Complete Appointment</h2>
+<div class="card mb-3 shadow-sm">
+    <div class="card-header bg-info text-white">
+        <h5 class="mb-0">Appointment Details</h5>
+    </div>
+    <div class="card-body">
+        <p><strong>Patient:</strong> {{ appointment._patient_user.name }}</p>
+        <p><strong>Date:</strong> {{ appointment.date }}</p>
+        <p><strong>Time:</strong> {{ appointment.time }}</p>
+    </div>
+</div>
+
+<div class="card shadow">
+    <div class="card-header bg-success text-white">
+        <h5 class="mb-0">Treatment Details</h5>
+    </div>
+    <div class="card-body">
+        <form method="POST">
+            <div class="mb-3">
+                <label for="diagnosis" class="form-label">Diagnosis *</label>
+                <textarea class="form-control" id="diagnosis" name="diagnosis" rows="3" required placeholder="Enter diagnosis details..."></textarea>
+            </div>
+            <div class="mb-3">
+                <label for="prescription" class="form-label">Prescription *</label>
+                <textarea class="form-control" id="prescription" name="prescription" rows="3" required placeholder="Enter prescribed medications..."></textarea>
+            </div>
+            <div class="mb-3">
+                <label for="notes" class="form-label">Additional Notes</label>
+                <textarea class="form-control" id="notes" name="notes" rows="2" placeholder="Any additional observations or instructions..."></textarea>
+            </div>
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                <a href="{{ url_for('doctor_dashboard') }}" class="btn btn-secondary">Cancel</a>
+                <button type="submit" class="btn btn-success">✅ Complete Appointment</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

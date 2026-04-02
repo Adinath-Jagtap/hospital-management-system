@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}Find Doctors{% endblock %}
+{% block content %}
+<h2 class="mb-4">🔍 Find Doctors</h2>
+<div class="row mb-3">
+    <div class="col-md-5">
+        <form method="GET" class="input-group">
+            <input type="text" name="search" class="form-control" 
+       placeholder="Search by name, specialization, or department" value="{{ search }}">
+            <button type="submit" class="btn btn-primary">Search</button>
+        </form>
+    </div>
+    <div class="col-md-4">
+        <form method="GET">
+            <select class="form-select" name="department" onchange="this.form.submit()">
+                <option value="">All Departments</option>
+                {% for dept in departments %}
+                <option value="{{ dept._id }}" {% if selected_dept == dept._id|string %}selected{% endif %}>{{ dept.name }}</option>
+                {% endfor %}
+            </select>
+        </form>
+    </div>
+</div>
+
+<div class="row">
+    {% for doctor in doctors %}
+    <div class="col-md-6 mb-3">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <h5 class="card-title">👨‍⚕️ {{ doctor._user.name }}</h5>
+                <p class="mb-1"><strong>Department:</strong> {{ doctor._dept.name }}</p>
+                <p class="mb-1"><strong>Specialization:</strong> {{ doctor.specialization }}</p>
+                <p class="mb-1"><strong>Qualification:</strong> {{ doctor.qualification }}</p>
+                <p class="mb-2"><strong>Experience:</strong> {{ doctor.experience_years }} years</p>
+                
+                <hr>
+                <h6 class="text-primary">📅 Available Slots (Next 7 Days):</h6>
+                {% if doctor._availabilities|length > 0 %}
+                <ul class="list-unstyled small">
+                    {% for av in doctor._availabilities[:3] %}
+                    <li>✓ {{ av.date }}: {{ av.start_time }} - {{ av.end_time }}</li>
+                    {% endfor %}
+                    {% if doctor._availabilities|length > 3 %}
+                    <li class="text-muted">... and more slots available</li>
+                    {% endif %}
+                </ul>
+                {% else %}
+                <p class="text-muted small">No availability set yet</p>
+                {% endif %}
+                
+                <a href="{{ url_for('book_appointment', doc_id=doctor._id) }}" class="btn btn-primary btn-sm w-100 mt-2">📅 Book Appointment</a>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="col-12">
+        <div class="alert alert-info text-center">No doctors found</div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

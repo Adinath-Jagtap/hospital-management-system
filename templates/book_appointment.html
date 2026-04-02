@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block title %}Book Appointment{% endblock %}
+{% block content %}
+<h2 class="mb-4">📅 Book Appointment</h2>
+<div class="card mb-3 shadow-sm">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">Doctor Information</h5>
+    </div>
+    <div class="card-body">
+        <h5>👨‍⚕️ Dr. {{ doctor._user.name }}</h5>
+        <p class="mb-1"><strong>Department:</strong> {{ doctor._dept.name }}</p>
+        <p class="mb-0"><strong>Specialization:</strong> {{ doctor.specialization }}</p>
+    </div>
+</div>
+
+<div class="card shadow">
+    <div class="card-header bg-success text-white">
+        <h5 class="mb-0">Select Appointment Slot</h5>
+    </div>
+    <div class="card-body">
+        <form method="POST">
+            <div class="mb-3">
+                <label for="date" class="form-label">Select Date *</label>
+                <select class="form-select" id="date" name="date" required onchange="updateTimeSlots()">
+                    <option value="">Choose a date</option>
+                    {% for av in availabilities %}
+                    <option value="{{ av.date }}" data-start="{{ av.start_time }}" data-end="{{ av.end_time }}">
+                        {{ av.date }} ({{ av.start_time }} - {{ av.end_time }})
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="mb-3">
+                <label for="time" class="form-label">Select Time *</label>
+                <select class="form-select" id="time" name="time" required>
+                    <option value="">Select date first</option>
+                </select>
+            </div>
+            
+            <div class="alert alert-info">
+                <small>📌 Appointments are scheduled in 30-minute slots</small>
+            </div>
+            
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                <a href="{{ url_for('patient_doctors') }}" class="btn btn-secondary">Cancel</a>
+                <button type="submit" class="btn btn-success">✅ Book Appointment</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function updateTimeSlots() {
+    const dateSelect = document.getElementById('date');
+    const timeSelect = document.getElementById('time');
+    const selectedOption = dateSelect.options[dateSelect.selectedIndex];
+    
+    if (!selectedOption.value) {
+        timeSelect.innerHTML = '<option value="">Select date first</option>';
+        return;
+    }
+    
+    const startTime = selectedOption.dataset.start;
+    const endTime = selectedOption.dataset.end;
+    const selectedDate = selectedOption.value;
+    
+    const bookedSlots = {{ booked_slots|tojson }};
+    timeSelect.innerHTML = '<option value="">Choose a time</option>';
+    
+    const start = new Date(`2000-01-01 ${startTime}`);
+    const end = new Date(`2000-01-01 ${endTime}`);
+    
+    while (start < end) {
+        const timeStr = start.toTimeString().slice(0, 5);
+        const isBooked = bookedSlots.some(slot => 
+            slot[0] === selectedDate && slot[1] === timeStr + ':00'
+        );
+        
+        if (!isBooked) {
+            const option = document.createElement('option');
+            option.value = timeStr;
+            option.textContent = timeStr;
+            timeSelect.appendChild(option);
+        }
+        
+        start.setMinutes(start.getMinutes() + 30);
+    }
+}
+</script>
+{% endblock %}

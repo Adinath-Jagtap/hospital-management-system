@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard{% endblock %}
+{% block content %}
+<h2 class="mb-4">📊 Admin Dashboard</h2>
+<div class="row">
+    <div class="col-md-3 mb-3">
+        <div class="card text-white bg-primary">
+            <div class="card-body">
+                <h5 class="card-title">👨‍⚕️ Total Doctors</h5>
+                <h2 class="mb-0">{{ total_doctors }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card text-white bg-success">
+            <div class="card-body">
+                <h5 class="card-title">👥 Total Patients</h5>
+                <h2 class="mb-0">{{ total_patients }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card text-white bg-info">
+            <div class="card-body">
+                <h5 class="card-title">📅 Total Appointments</h5>
+                <h2 class="mb-0">{{ total_appointments }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card text-white bg-warning">
+            <div class="card-body">
+                <h5 class="card-title">⏰ Upcoming</h5>
+                <h2 class="mb-0">{{ upcoming_appointments }}</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card shadow">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">Quick Actions</h5>
+            </div>
+            <div class="list-group list-group-flush">
+                <a href="{{ url_for('admin_doctors') }}" class="list-group-item list-group-item-action">
+                    👨‍⚕️ Manage Doctors
+                </a>
+                <a href="{{ url_for('admin_patients') }}" class="list-group-item list-group-item-action">
+                    👥 Manage Patients
+                </a>
+                <a href="{{ url_for('admin_appointments') }}" class="list-group-item list-group-item-action">
+                    📅 View All Appointments
+                </a>
+                <a href="{{ url_for('add_doctor') }}" class="list-group-item list-group-item-action">
+                    ➕ Add New Doctor
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

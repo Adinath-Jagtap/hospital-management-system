@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Manage Doctors{% endblock %}
+{% block content %}
+<h2 class="mb-4">👨‍⚕️ Manage Doctors</h2>
+<div class="row mb-3">
+    <div class="col-md-6">
+        <form method="GET" class="input-group">
+            <input type="text" name="search" class="form-control" placeholder="Search by name or specialization" value="{{ search }}">
+            <button type="submit" class="btn btn-primary">🔍 Search</button>
+        </form>
+    </div>
+    <div class="col-md-6 text-end">
+        <a href="{{ url_for('add_doctor') }}" class="btn btn-success">➕ Add Doctor</a>
+    </div>
+</div>
+
+<div class="card shadow">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Department</th>
+                        <th>Specialization</th>
+                        <th>Experience</th>
+                        <th>Contact</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for doctor in doctors %}
+                    <tr>
+                        <td>{{ doctor._id }}</td>
+                        <td>{{ doctor._user.name }}</td>
+                        <td>{{ doctor._dept.name }}</td>
+                        <td>{{ doctor.specialization }}</td>
+                        <td>{{ doctor.experience_years }} years</td>
+                        <td>{{ doctor._user.phone }}</td>
+                        <td>
+                            <a href="{{ url_for('edit_doctor', doc_id=doctor._id) }}" class="btn btn-sm btn-warning">✏️ Edit</a>
+                            <form method="POST" action="{{ url_for('delete_doctor', doc_id=doctor._id) }}" style="display:inline;" onsubmit="return confirm('Deactivate this doctor?')">
+                                <button type="submit" class="btn btn-sm btn-danger">🗑️ Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7" class="text-center">No doctors found</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

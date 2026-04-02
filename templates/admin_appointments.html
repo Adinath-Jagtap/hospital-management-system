@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}All Appointments{% endblock %}
+{% block content %}
+<h2 class="mb-4">📅 All Appointments</h2>
+<div class="card shadow">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>ID</th>
+                        <th>Patient</th>
+                        <th>Doctor</th>
+                        <th>Department</th>
+                        <th>Date</th>
+                        <th>Time</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for apt in appointments %}
+                    <tr>
+                        <td>{{ apt._id }}</td>
+                        <td>{{ apt._patient_user.name }}</td>
+                        <td>{{ apt._doctor_user.name }}</td>
+                        <td>{{ apt._doctor_dept.name }}</td>
+                        <td>{{ apt.date }}</td>
+                        <td>{{ apt.time }}</td>
+                        <td>
+                            <span class="badge bg-{{ 'success' if apt.status == 'Completed' else 'warning' if apt.status == 'Booked' else 'danger' }}">
+                                {{ apt.status }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7" class="text-center">No appointments found</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

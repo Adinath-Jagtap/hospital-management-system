@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Manage Availability{% endblock %}
+{% block content %}
+<h2 class="mb-4">⏰ Manage My Availability (Next 7 Days)</h2>
+<form method="POST">
+    {% for date in dates %}
+    <div class="card mb-3 shadow-sm">
+        <div class="card-header bg-light">
+            <h5 class="mb-0">📅 {{ date }}</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <h6 class="text-primary">🌅 Morning Shift</h6>
+                    <div class="row">
+                        <div class="col-6 mb-2">
+                            <label class="form-label small">Start Time</label>
+                            <input type="time" class="form-control" name="morning_start_{{ date }}" 
+                                   value="{% if date in availability_dict and availability_dict[date]|length > 0 %}{{ availability_dict[date][0].start_time.strftime('%H:%M') }}{% endif %}">
+                        </div>
+                        <div class="col-6 mb-2">
+                            <label class="form-label small">End Time</label>
+                            <input type="time" class="form-control" name="morning_end_{{ date }}"
+                                   value="{% if date in availability_dict and availability_dict[date]|length > 0 %}{{ availability_dict[date][0].end_time.strftime('%H:%M') }}{% endif %}">
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <h6 class="text-warning">🌙 Evening Shift</h6>
+                    <div class="row">
+                        <div class="col-6 mb-2">
+                            <label class="form-label small">Start Time</label>
+                            <input type="time" class="form-control" name="evening_start_{{ date }}"
+                                   value="{% if date in availability_dict and availability_dict[date]|length > 1 %}{{ availability_dict[date][1].start_time.strftime('%H:%M') }}{% endif %}">
+                        </div>
+                        <div class="col-6 mb-2">
+                            <label class="form-label small">End Time</label>
+                            <input type="time" class="form-control" name="evening_end_{{ date }}"
+                                   value="{% if date in availability_dict and availability_dict[date]|length > 1 %}{{ availability_dict[date][1].end_time.strftime('%H:%M') }}{% endif %}">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+        <a href="{{ url_for('doctor_dashboard') }}" class="btn btn-secondary">Cancel</a>
+        <button type="submit" class="btn btn-primary">💾 Update Availability</button>
+    </div>
+</form>
+{% endblock %}

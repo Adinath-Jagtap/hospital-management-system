@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block title %}Patient Dashboard{% endblock %}
+{% block content %}
+<h2 class="mb-4">👤 Patient Dashboard</h2>
+<div class="row">
+    <div class="col-md-6 mb-3">
+        <div class="card shadow">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0">⏰ Upcoming Appointments</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Doctor</th>
+                                <th>Date</th>
+                                <th>Time</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for apt in upcoming_appointments %}
+                            <tr>
+                                <td>{{ apt._doctor_user.name }}</td>
+                                <td>{{ apt.date }}</td>
+                                <td>{{ apt.time }}</td>
+                                <td>
+                                    <form method="POST" action="{{ url_for('cancel_appointment', apt_id=apt._id) }}" style="display:inline;" onsubmit="return confirm('Cancel appointment?')">
+                                        <button type="submit" class="btn btn-sm btn-danger">Cancel</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="4" class="text-center text-muted">No upcoming appointments</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 mb-3">
+        <div class="card shadow">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">📝 Recent Treatments</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    {% for apt in past_appointments[:5] %}
+                    {% if apt._treatment %}
+                    <li class="list-group-item">
+                        <strong>{{ apt.date }}</strong> - Dr. {{ apt._doctor_user.name }}<br>
+                        <small class="text-muted">{{ apt._treatment.diagnosis }}</small>
+                    </li>
+                    {% endif %}
+                    {% else %}
+                    <li class="list-group-item text-center text-muted">No treatment history</li>
+                    {% endfor %}
+                </ul>
+                <div class="text-center mt-2">
+                    <a href="{{ url_for('treatment_history') }}" class="btn btn-sm btn-primary">View All History</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow mt-3">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">🏥 Available Departments</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            {% for dept in departments %}
+            <div class="col-md-4 mb-3">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h6 class="card-title">{{ dept.name }}</h6>
+                        <p class="card-text small text-muted">{{ dept.description }}</p>
+                        <a href="{{ url_for('patient_doctors', department=dept._id) }}" class="btn btn-sm btn-primary">View Doctors</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

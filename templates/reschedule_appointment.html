@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% block title %}Reschedule Appointment{% endblock %}
+{% block content %}
+<h2 class="mb-4">🔄 Reschedule Appointment</h2>
+
+<div class="card mb-3 shadow-sm">
+    <div class="card-header bg-warning text-dark">
+        <h5 class="mb-0">Current Appointment Details</h5>
+    </div>
+    <div class="card-body">
+        <p><strong>Doctor:</strong> Dr. {{ doctor._user.name }}</p>
+        <p><strong>Department:</strong> {{ doctor._dept.name }}</p>
+        <p><strong>Current Date:</strong> {{ appointment.date }}</p>
+        <p><strong>Current Time:</strong> {{ appointment.time }}</p>
+        <div class="alert alert-info mb-0">
+            <small>📌 Select a new date and time below to reschedule this appointment</small>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow">
+    <div class="card-header bg-success text-white">
+        <h5 class="mb-0">Available Slots (Next 7 Days)</h5>
+    </div>
+    <div class="card-body">
+        {% if availabilities %}
+        <form method="POST">
+            <div class="mb-3">
+                <label class="form-label"><strong>Select New Date & Time Slot *</strong></label>
+                <div class="list-group">
+                    {% for av in availabilities %}
+                    <div class="list-group-item">
+                        <h6 class="mb-2">📅 {{ av.date }}</h6>
+                        <p class="mb-2 text-muted small">Available: {{ av.start_time }} - {{ av.end_time }}</p>
+                        
+                        <div class="row g-2">
+                            {% set start_parts = av.start_time.split(':') %}
+                            {% set end_parts = av.end_time.split(':') %}
+                            {% set start_hour = start_parts[0]|int %}
+                            {% set start_minute = start_parts[1]|int %}
+                            {% set end_hour = end_parts[0]|int %}
+                            {% set end_minute = end_parts[1]|int %}
+                            
+                            {% set start_total = start_hour * 60 + start_minute %}
+                            {% set end_total = end_hour * 60 + end_minute %}
+                            
+                            {% for slot_minutes in range(start_total, end_total, 30) %}
+                                {% set slot_hour = (slot_minutes // 60) %}
+                                {% set slot_min = (slot_minutes % 60) %}
+                                {% set time_str = "%02d:%02d"|format(slot_hour, slot_min) %}
+                                {% set time_full = "%02d:%02d:00"|format(slot_hour, slot_min) %}
+                                
+                                {% set is_booked = False %}
+                                {% for booked_date, booked_time in booked_slots %}
+                                    {% if booked_date == av.date and booked_time == time_full %}
+                                        {% set is_booked = True %}
+                                    {% endif %}
+                                {% endfor %}
+                                
+                                <div class="col-6 col-md-3">
+                                    {% if is_booked %}
+                                        <button type="button" class="btn btn-outline-secondary btn-sm w-100" disabled>
+                                            {{ time_str }} (Booked)
+                                        </button>
+                                    {% else %}
+                                        <button type="submit" name="date" value="{{ av.date }}" 
+                                                onclick="this.form.time.value='{{ time_str }}'" 
+                                                class="btn btn-outline-success btn-sm w-100">
+                                            {{ time_str }}
+                                        </button>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <hr class="my-2">
+                    </div>
+                    {% endfor %}
+                </div>
+                <input type="hidden" name="time" id="time" required>
+            </div>
+            
+            <div class="alert alert-info">
+                <small>📌 Click on any available time slot to reschedule. Appointments are in 30-minute slots.</small>
+            </div>
+            
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                <a href="{{ url_for('patient_dashboard') }}" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+        {% else %}
+        <div class="alert alert-warning text-center">
+            <p class="mb-0">⚠️ No availability set by doctor for the next 7 days</p>
+            <small>Please check back later or contact the hospital</small>
+        </div>
+        <div class="mt-3">
+            <a href="{{ url_for('patient_dashboard') }}" class="btn btn-secondary">← Back to Dashboard</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
