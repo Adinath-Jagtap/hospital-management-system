@@ -16,12 +16,12 @@
                         <div class="col-6 mb-2">
                             <label class="form-label small">Start Time</label>
                             <input type="time" class="form-control" name="morning_start_{{ date }}" 
-                                   value="{% if date in availability_dict and availability_dict[date]|length > 0 %}{{ availability_dict[date][0].start_time.strftime('%H:%M') }}{% endif %}">
+                                   value="{% if date in availability_dict and availability_dict[date]|length > 0 %}{{ availability_dict[date][0].start_time }}{% endif %}">
                         </div>
                         <div class="col-6 mb-2">
                             <label class="form-label small">End Time</label>
                             <input type="time" class="form-control" name="morning_end_{{ date }}"
-                                   value="{% if date in availability_dict and availability_dict[date]|length > 0 %}{{ availability_dict[date][0].end_time.strftime('%H:%M') }}{% endif %}">
+                                   value="{% if date in availability_dict and availability_dict[date]|length > 0 %}{{ availability_dict[date][0].end_time }}{% endif %}">
                         </div>
                     </div>
                 </div>
@@ -31,12 +31,12 @@
                         <div class="col-6 mb-2">
                             <label class="form-label small">Start Time</label>
                             <input type="time" class="form-control" name="evening_start_{{ date }}"
-                                   value="{% if date in availability_dict and availability_dict[date]|length > 1 %}{{ availability_dict[date][1].start_time.strftime('%H:%M') }}{% endif %}">
+                                   value="{% if date in availability_dict and availability_dict[date]|length > 1 %}{{ availability_dict[date][1].start_time }}{% endif %}">
                         </div>
                         <div class="col-6 mb-2">
                             <label class="form-label small">End Time</label>
                             <input type="time" class="form-control" name="evening_end_{{ date }}"
-                                   value="{% if date in availability_dict and availability_dict[date]|length > 1 %}{{ availability_dict[date][1].end_time.strftime('%H:%M') }}{% endif %}">
+                                   value="{% if date in availability_dict and availability_dict[date]|length > 1 %}{{ availability_dict[date][1].end_time }}{% endif %}">
                         </div>
                     </div>
                 </div>
