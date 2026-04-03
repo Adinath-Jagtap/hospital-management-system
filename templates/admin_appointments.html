@@ -21,9 +21,9 @@
                     {% for apt in appointments %}
                     <tr>
                         <td>{{ apt._id }}</td>
-                        <td>{{ apt._patient_user.name }}</td>
-                        <td>{{ apt._doctor_user.name }}</td>
-                        <td>{{ apt._doctor_dept.name }}</td>
+                        <td>{{ apt._patient_user.name if apt._patient_user else 'N/A' }}</td>
+                        <td>{{ apt._doctor_user.name if apt._doctor_user else 'N/A' }}</td>
+                        <td>{{ apt._doctor_dept.name if apt._doctor_dept else 'N/A' }}</td>
                         <td>{{ apt.date }}</td>
                         <td>{{ apt.time }}</td>
                         <td>

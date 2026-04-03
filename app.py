@@ -652,11 +652,11 @@ def delete_patient(pat_id):
 def admin_appointments():
     apts = list(appointments_col.find().sort([('date', -1), ('time', -1)]))
     for apt in apts:
-        patient = patients_col.find_one({'_id': oid(apt['patient_id'])})
-        doctor  = doctors_col.find_one({'_id': oid(apt['doctor_id'])})
-        apt['_patient_user'] = users_col.find_one({'_id': oid(patient['user_id'])}) if patient else {}
-        apt['_doctor_user']  = users_col.find_one({'_id': oid(doctor['user_id'])})  if doctor  else {}
-        apt['_doctor_dept']  = departments_col.find_one({'_id': oid(doctor['department_id'])}) if doctor else {}
+        patient = patients_col.find_one({'_id': oid(apt['patient_id'])}) if apt.get('patient_id') else None
+        doctor  = doctors_col.find_one({'_id': oid(apt['doctor_id'])}) if apt.get('doctor_id') else None
+        apt['_patient_user'] = users_col.find_one({'_id': oid(patient['user_id'])}) if patient and patient.get('user_id') else None
+        apt['_doctor_user']  = users_col.find_one({'_id': oid(doctor['user_id'])}) if doctor and doctor.get('user_id') else None
+        apt['_doctor_dept']  = departments_col.find_one({'_id': oid(doctor['department_id'])}) if doctor and doctor.get('department_id') else None
     return render_template('admin_appointments.html', appointments=apts)
 
 
@@ -667,6 +667,9 @@ def admin_appointments():
 @role_required('doctor')
 def doctor_dashboard():
     doctor = doctors_col.find_one({'user_id': session['user_id']})
+    if not doctor:
+        flash('Doctor profile not found. Please contact administrator.', 'error')
+        return redirect(url_for('logout'))
     today_str    = date.today().strftime('%Y-%m-%d')
     week_end_str = (date.today() + timedelta(days=7)).strftime('%Y-%m-%d')
 
@@ -677,17 +680,18 @@ def doctor_dashboard():
     }).sort([('date', 1), ('time', 1)]))
 
     for apt in upcoming_apts:
-        patient = patients_col.find_one({'_id': oid(apt['patient_id'])})
-        apt['_patient_user'] = users_col.find_one({'_id': oid(patient['user_id'])}) if patient else {}
+        patient = patients_col.find_one({'_id': oid(apt['patient_id'])}) if apt.get('patient_id') else None
+        apt['_patient_user'] = users_col.find_one({'_id': oid(patient['user_id'])}) if patient and patient.get('user_id') else None
 
     # Distinct patients for this doctor
     patient_ids = appointments_col.distinct('patient_id', {'doctor_id': str_id(doctor['_id'])})
     patients = []
     for pid in patient_ids:
-        pat = patients_col.find_one({'_id': oid(pid)})
-        if pat:
+        pat = patients_col.find_one({'_id': oid(pid)}) if pid else None
+        if pat and pat.get('user_id'):
             pat['_user'] = users_col.find_one({'_id': oid(pat['user_id'])})
-            patients.append(pat)
+            if pat['_user']:  # Only append if user still exists
+                patients.append(pat)
 
     doctor['_user'] = users_col.find_one({'_id': oid(doctor['user_id'])})
     dept = departments_col.find_one({'_id': oid(doctor['department_id'])})
@@ -704,6 +708,9 @@ def doctor_dashboard():
 @role_required('doctor')
 def doctor_availability():
     doctor = doctors_col.find_one({'user_id': session['user_id']})
+    if not doctor:
+        flash('Doctor profile not found. Please contact administrator.', 'error')
+        return redirect(url_for('logout'))
     today     = date.today()
     week_end  = today + timedelta(days=7)
 
@@ -823,9 +830,10 @@ def patient_history(pat_id):
     }).sort('date', -1))
 
     for apt in apts:
-        apt['_treatment'] = treatments_col.find_one({'appointment_id': str_id(apt['_id'])})
+        patient = patients_col.find_one({'_id': oid(apt['patient_id'])}) if apt.get('patient_id') else None
+        apt['_treatment'] = treatments_col.find_one({'appointment_id': str_id(apt['_id'])}) if apt.get('_id') else None
 
-    patient['_user'] = users_col.find_one({'_id': oid(patient['user_id'])})
+    patient['_user'] = users_col.find_one({'_id': oid(patient['user_id'])}) if patient.get('user_id') else None
     return render_template('patient_history.html', patient=patient, appointments=apts)
 
 
@@ -839,8 +847,12 @@ def doctor_cancel_appointment(apt_id):
     
     appointment = appointments_col.find_one({'_id': oid(apt_id)})
     doctor = doctors_col.find_one({'user_id': session['user_id']})
-
-    if not appointment or appointment['doctor_id'] != str_id(doctor['_id']):
+    
+    if not appointment:
+        flash('Appointment not found', 'error')
+        return redirect(url_for('doctor_dashboard'))
+    
+    if not doctor or appointment['doctor_id'] != str_id(doctor['_id']):
         flash('Access denied', 'error')
         return redirect(url_for('doctor_dashboard'))
 
@@ -876,9 +888,9 @@ def patient_dashboard():
 
     # Enrich with doctor info
     for apt in upcoming_apts + past_apts:
-        doc = doctors_col.find_one({'_id': oid(apt['doctor_id'])})
-        apt['_doctor_user'] = users_col.find_one({'_id': oid(doc['user_id'])}) if doc else {}
-        apt['_treatment']   = treatments_col.find_one({'appointment_id': str_id(apt['_id'])})
+        doc = doctors_col.find_one({'_id': oid(apt['doctor_id'])}) if apt.get('doctor_id') else None
+        apt['_doctor_user'] = users_col.find_one({'_id': oid(doc['user_id'])}) if doc and doc.get('user_id') else None
+        apt['_treatment']   = treatments_col.find_one({'appointment_id': str_id(apt['_id'])}) if apt.get('_id') else None
 
     patient['_user'] = users_col.find_one({'_id': oid(patient['user_id'])})
 
@@ -1236,10 +1248,10 @@ def treatment_history():
     }).sort('date', -1))
 
     for apt in apts:
-        doc = doctors_col.find_one({'_id': oid(apt['doctor_id'])})
-        apt['_doctor_user'] = users_col.find_one({'_id': oid(doc['user_id'])}) if doc else {}
-        apt['_doctor_dept']  = departments_col.find_one({'_id': oid(doc['department_id'])}) if doc else {}
-        apt['_treatment']   = treatments_col.find_one({'appointment_id': str_id(apt['_id'])})
+        doc = doctors_col.find_one({'_id': oid(apt['doctor_id'])}) if apt.get('doctor_id') else None
+        apt['_doctor_user'] = users_col.find_one({'_id': oid(doc['user_id'])}) if doc and doc.get('user_id') else None
+        apt['_doctor_dept']  = departments_col.find_one({'_id': oid(doc['department_id'])}) if doc and doc.get('department_id') else None
+        apt['_treatment']   = treatments_col.find_one({'appointment_id': str_id(apt['_id'])}) if apt.get('_id') else None
 
     return render_template('treatment_history.html', appointments=apts)
 
@@ -1268,14 +1280,14 @@ def api_doctors():
 def api_appointments():
     result = []
     for apt in appointments_col.find():
-        patient = patients_col.find_one({'_id': oid(apt['patient_id'])})
-        doctor  = doctors_col.find_one({'_id': oid(apt['doctor_id'])})
-        p_user  = users_col.find_one({'_id': oid(patient['user_id'])}) if patient else {}
-        d_user  = users_col.find_one({'_id': oid(doctor['user_id'])})  if doctor  else {}
+        patient = patients_col.find_one({'_id': oid(apt['patient_id'])}) if apt.get('patient_id') else None
+        doctor  = doctors_col.find_one({'_id': oid(apt['doctor_id'])}) if apt.get('doctor_id') else None
+        p_user  = users_col.find_one({'_id': oid(patient['user_id'])}) if patient and patient.get('user_id') else None
+        d_user  = users_col.find_one({'_id': oid(doctor['user_id'])}) if doctor and doctor.get('user_id') else None
         result.append({
             'id':      str_id(apt['_id']),
-            'patient': p_user.get('name', ''),
-            'doctor':  d_user.get('name', ''),
+            'patient': p_user.get('name', '') if p_user else '',
+            'doctor':  d_user.get('name', '') if d_user else '',
             'date':    apt['date'],
             'time':    apt['time'],
             'status':  apt['status']
@@ -1290,14 +1302,14 @@ def api_appointment(apt_id):
         return jsonify({'error': 'Not found'}), 404
 
     if request.method == 'GET':
-        patient = patients_col.find_one({'_id': oid(appointment['patient_id'])})
-        doctor  = doctors_col.find_one({'_id': oid(appointment['doctor_id'])})
-        p_user  = users_col.find_one({'_id': oid(patient['user_id'])}) if patient else {}
-        d_user  = users_col.find_one({'_id': oid(doctor['user_id'])})  if doctor  else {}
+        patient = patients_col.find_one({'_id': oid(appointment['patient_id'])}) if appointment.get('patient_id') else None
+        doctor  = doctors_col.find_one({'_id': oid(appointment['doctor_id'])}) if appointment.get('doctor_id') else None
+        p_user  = users_col.find_one({'_id': oid(patient['user_id'])}) if patient and patient.get('user_id') else None
+        d_user  = users_col.find_one({'_id': oid(doctor['user_id'])}) if doctor and doctor.get('user_id') else None
         return jsonify({
             'id':      str_id(appointment['_id']),
-            'patient': p_user.get('name', ''),
-            'doctor':  d_user.get('name', ''),
+            'patient': p_user.get('name', '') if p_user else '',
+            'doctor':  d_user.get('name', '') if d_user else '',
             'date':    appointment['date'],
             'time':    appointment['time'],
             'status':  appointment['status']
@@ -1312,6 +1324,28 @@ def api_appointment(apt_id):
     elif request.method == 'DELETE':
         appointments_col.update_one({'_id': oid(apt_id)}, {'$set': {'status': 'Cancelled'}})
         return jsonify({'message': 'Appointment cancelled'})
+
+
+# ─── Error Handlers ───────────────────────────────────────────────────────────
+
+@app.errorhandler(404)
+def page_not_found(error):
+    flash('Page not found', 'error')
+    return redirect(url_for('index'))
+
+
+@app.errorhandler(500)
+def internal_server_error(error):
+    app.logger.error(f'Internal Server Error: {error}')
+    flash('An internal server error occurred. Please try again.', 'error')
+    return redirect(url_for('index'))
+
+
+@app.errorhandler(Exception)
+def handle_exception(error):
+    app.logger.error(f'Unhandled Exception: {error}', exc_info=True)
+    flash('An unexpected error occurred. Please try again.', 'error')
+    return redirect(url_for('index'))
 
 
 # ─── Entry Point ──────────────────────────────────────────────────────────────
